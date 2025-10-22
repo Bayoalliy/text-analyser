@@ -18,3 +18,6 @@ class DBstorage():
 	
 	def find_all(self, filters):
 		return self.db.strings.find(filters)
+	
+	def delete_one(self, filters):
+		return self.db.strings.delete_one(filters)

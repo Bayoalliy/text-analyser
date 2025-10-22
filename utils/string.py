@@ -3,7 +3,7 @@ from datetime import datetime
 
 class String():
 	def __init__(self, value):
-		self.value = value
+		self.value = value.strip()
 		self.created_at = datetime.now()
 
 	def is_palindrome(self):
@@ -17,7 +17,7 @@ class String():
 
 
 	def unique_characters(self):
-		return len(set(self.value))
+		return len(set(self.value.replace(" ", "")))
 
 	def word_count(self):
 		return len(self.value.split())

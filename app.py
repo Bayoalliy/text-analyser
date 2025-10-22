@@ -21,7 +21,7 @@ def create_string():
 	print(storage.find_string(data))
 	
 	dic = {
-			"value": val,
+			"created_at": txt.created_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
 			"id": txt.hashed_value(),
 			"properties": {
 				"length": txt.length(),
@@ -31,20 +31,23 @@ def create_string():
 				"sha256_hash": txt.hashed_value(),
 				"character_frequency_map": txt.character_frequency_map(),
 			},
-			"created_at": txt.created_at.strftime("%Y-%m-%d %H:%M:%S")
+			"value": val
 	}
 
 	storage.save(dic)
 	del dic["_id"]
-	return jsonify(dic), 200 
+	return jsonify(dic), 201 
 
 def construct_filter(params):
 	filters = {}
 	for arg, val in params.items():
 		if arg == "is_palindrome":
-			if val == "True" or val == "False":
-				filters["properties.is_palindrome"] = eval(val)
-				params[arg] = eval(val)
+			if val == "true" or val == "True":
+				filters["properties.is_palindrome"] = True
+				params[arg] = True
+			elif val == "false" or val == "False":
+				filters["properties.is_palindrome"] = False
+				params[arg] = False
 			else:
 				return [None, None]
 
@@ -175,6 +178,14 @@ def get_strings_with_natural_language():
 
 	except Exception as e:
 		return jsonify(error="Unable to parse natural language query4"), 400
+
+
+@app.route('/strings/<string_value>', methods=['DELETE'], strict_slashes=False)
+def delete_string(string_value):
+	res = storage.delete_one({"value": string_value})
+	if res.deleted_count:
+		return jsonify({}), 204
+	return jsonify({'Not Found': 'String does not exist in the system'}), 404
 
 
 if __name__ == '__main__':
