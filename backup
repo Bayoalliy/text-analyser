@@ -91,17 +91,44 @@ def get_strings():
 	filters = {}
 	params = request.args.to_dict()
 
-	filters, args = construct_filter(params)
-	
-	if filters == None:
-		return jsonify({'Bad Request': 'Invalid query parameter values or types'}), 400
+	for arg, val in params.items():
+		if arg == "is_palindrome":
+			if val == "True" or val == "False":
+				filters["properties.is_palindrome"] = eval(val)
+				params[arg] = eval(val)
+			else:
+				return jsonify({'Bad Request':  'Invalid query parameter values or types'}), 400
+
+		if arg == "min_length":
+			try:
+				filters["properties.length"] = {"$gte":int(val)}
+				params[arg] = int(val)
+			except ValueError:
+				return jsonify({'Bad Request':  'Invalid query parameter values or types'}), 400
+
+		if arg == "max_length":
+			try:
+				filters["properties.length"] = {"$lte":int(val)}
+				params[arg] = int(val)
+			except ValueError:
+				return jsonify({'Bad Request':  'Invalid query parameter values or types'}), 400
+
+		if arg == "word_count":
+			try:
+				filters["properties.word_count"] = int(val)
+				params[arg] = int(val)
+			except ValueError:
+				return jsonify({'Bad Request': 'Invalid query parameter values or types'}), 400
+
+		if arg == "contains_character":
+			filters["value"] = {"$regex": val, "$options": "i"}
 
 	resp = {"data": []}
 	for obj in storage.find_all(filters):
 		del obj["_id"]
 		resp["data"].append(obj)
 
-	resp["filters_applied"] = args
+	resp["filters_applied"] = params
 	resp["count"] = len(resp["data"])
 	return jsonify(resp), 200
 

@@ -1,16 +1,20 @@
 from dotenv import load_dotenv
 import os
 from pymongo import MongoClient
-
-# Load environment variables from .env file
 load_dotenv()
 
-# Access them
-db_url = os.getenv("DATABASE_URL")
+class DBstorage():
+	def __init__(self):
+		self.db_url = os.getenv("DATABASE_URL")
+		self.client = MongoClient(self.db_url)
+		self.db = self.client['hng-task_1']
 
-client = MongoClient(db_url)
-try:
-    # Check the connection by listing database names
-    print(client.list_database_names())
-except Exception as e:
-    print(e)
+	def save(self, obj):
+		res = self.db.strings.insert_one(obj)
+		return res.inserted_id
+
+	def find_string(self, obj):
+		return self.db.strings.find_one(obj)
+	
+	def find_all(self, filters):
+		return self.db.strings.find(filters)
